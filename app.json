@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PM",
-    "slug": "PM",
+    "name": "ParanoidMilkshake",
+    "slug": "ParanoidMilkshake",
     "platforms": [
       "ios",
       "android",
@@ -23,6 +23,10 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "com.ducktales.yellowduck",
+      "versionCode": 1
     }
   }
 }
