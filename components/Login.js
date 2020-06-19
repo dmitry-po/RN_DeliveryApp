@@ -6,10 +6,10 @@ export default function Login({ navigation }) {
     <View style={styles.mainview}>
       <View style={styles.windowview}>
         <Text style={{ fontSize: 23 }}>Вход</Text>
-        <Text style={styles.text}>Телефон</Text>
-        <TextInput defaultValue='+7' style={styles.textInput} keyboardType='numeric' />
-        <Text style={styles.text}>Пароль</Text>
-        <TextInput style={styles.textInput} />
+        <Text style={styles.text}>Телефон:</Text>
+        <TextInput defaultValue='+7' style={styles.textInput} keyboardType='phone-pad' />
+        <Text style={styles.text}>Пароль:</Text>
+        <TextInput style={styles.textInput} placeholder='******' secureTextEntry={true} />
         <View style={{ paddingTop: 10 }}>
           <Button color='#F25D27' title="Войти" onPress={() => navigation.navigate("Home")} />
         </View>

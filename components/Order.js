@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+import { BottomNavigation } from '../shared/tools';
 
 export default function Order({ navigation }) {
     const uri = "https://www.google.ru/maps/search/" + navigation.getParam('address')
@@ -19,17 +20,24 @@ export default function Order({ navigation }) {
 
     const goToActiveOrders = () => navigation.navigate('Home');
 
-    const leftButtonFunction = navigation.getParam('active') === 0 ? goBack : cancelOrder
-    const rightButtonFunction = navigation.getParam('active') === 0 ? goToActiveOrders : goBack
-    const leftButtonText = navigation.getParam('active') === 0 ? 'Вернуться' : 'Отказаться'
-    const rightButtonText = navigation.getParam('active') === 0 ? 'Принять' : 'Завершить'
+    const leftButtonFunction = navigation.getParam('active') === 0 ? goBack : cancelOrder;
+    const leftButtonText = navigation.getParam('active') === 0 ? 'Вернуться' : 'Отказаться';
+    const leftButtonIcon = navigation.getParam('active') === 0 ? 'arrow-back' : 'cancel';
+    const rightButtonFunction = navigation.getParam('active') === 0 ? goToActiveOrders : goBack;
+    const rightButtonText = navigation.getParam('active') === 0 ? 'Принять' : 'Завершить';
+    const rightButtonIcon = navigation.getParam('active') === 0 ? 'add' : 'done';
+
+    const menu = [{name: leftButtonText, icon:leftButtonIcon, color:'#F25D27', onPress:leftButtonFunction},
+                  {name: rightButtonText, icon: rightButtonIcon, color:'#025159', onPress:rightButtonFunction}]
 
     console.log(uri)
     return (
         <>
             <View style={{ margin: 10, flex: 1 }}>
                 <Text style={styles.header}>Заказ #{navigation.getParam('key')}</Text>
-                <Text style={styles.text}>Адрес доставки:</Text>
+                <Text style={styles.text}>
+                    Адрес доставки:
+                </Text>
                 <Text style={{ color: 'blue' }} onPress={() => (Linking.openURL(uri))}>{navigation.getParam('address')}</Text>
                 <Text style={styles.text}>Вес отправления:</Text>
                 <Text>{navigation.getParam('weight')}</Text>
@@ -38,18 +46,8 @@ export default function Order({ navigation }) {
                     <Text key={item.lineNum}>{item.lineNum}. { item.content}, { item.volume} {item.unit};</Text>
                 ))}
             </View>
-            <View style={{ position: 'absolute', bottom: 0, flexDirection: 'row', width: '100%', height: 50 }}>
-                <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: '#F25D27', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={leftButtonFunction}>
-                    <Text style={{ color: 'white' }}>{leftButtonText}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ flex: 1, backgroundColor: '#025159', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={rightButtonFunction}>
-                    <Text style={{ color: 'white' }}>{rightButtonText}</Text>
-                </TouchableOpacity>
-            </View>
+            < BottomNavigation menu={menu} />
+            
         </>
     );
 }

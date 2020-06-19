@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Button, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import getOrdersView from '../shared/tools';
+import { View, StyleSheet, Button } from 'react-native';
+import { OrdersView, FAB, AppWidth } from '../shared/tools';
+
+console.log('hey')
+console.log(AppWidth)
 
 export default function Home({ navigation }) {
     const [orders, setOrders] = useState([
@@ -20,31 +23,12 @@ export default function Home({ navigation }) {
         { key: '17', address: 'Адамса, 42', weight: '77.7кг', active: 1 },
         { key: '18', address: 'Вечнозеленая Аллея, 742', weight: '88.8кг', active: 1 }])
 
-    const selectedOrdersView = getOrdersView(orders, navigation)
-
     return (
         <View style={styles.mainview}>
-            <ScrollView>
-                <View style={styles.windowview}>
-                    { selectedOrdersView }
-                </View>
-            </ScrollView>
-            <TouchableOpacity style={{
-                position: 'absolute',
-                right: '5%',
-                bottom: '5%',
-                paddingTop: -20,
-                borderRadius: 90,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'white',
-                width: 60,
-                height: 60,
-                elevation: 5
-            }}
-                onPress={() => navigation.navigate('OpenOrders')}>
-                <Text style={{ color: '#F25D27', fontSize: 50 }} >+</Text>
-            </TouchableOpacity>
+            <View style={{ margin: 5 }}>
+                < OrdersView data={orders} navigation={navigation} />
+            </View>
+            < FAB navigation={navigation} elementColor='#F25D27' />
 
         </View>
     );
@@ -52,8 +36,9 @@ export default function Home({ navigation }) {
 
 const styles = StyleSheet.create({
     mainview: {
-        justifyContent: 'center',
-        flex: 1
+        flex: 1,
+        width: AppWidth,
+        alignSelf:'center'
     },
     windowview: {
         flex: 1,
@@ -65,7 +50,8 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         opacity: 0.95,
         margin: 5,
-        padding: 5
+        padding: 5,
+        
     },
     header: {
         fontSize: 24,
