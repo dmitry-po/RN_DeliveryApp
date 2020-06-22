@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Picker, StyleSheet, ScrollView } from 'react-native';
-import { OrdersView } from '../shared/tools';
+import { OrdersView, OrderDetails } from '../shared/tools';
 import styles from '../assets/Styles';
 import allOrders from '../data/orders';
 import allShifts from '../data/shifts';
@@ -9,9 +9,26 @@ import allShifts from '../data/shifts';
 export default function OpenOrders({ navigation }) {
     const [selectedShift, setSelectedShift] = useState(allShifts[0])
     const selectedOrders = allOrders.filter(item => item.shift === selectedShift)
+    const [popupVisibiility, setpopupVisibiility] = useState(false)
+    const [selectedOrder, setSelectedOrder] = useState({})
+    function openOrderDetails(item) {
+        setSelectedOrder(item);
+        setpopupVisibiility(true);
+    }
+    function cancelOrder() {       
+    }
+    function closeOrder() {
+        navigation.navigate('Home');
+        setpopupVisibiility(false);
+    }
+
+    const buttons = [
+        { title: '', onPress: cancelOrder },
+        { title: 'ВЗЯТЬ', onPress: closeOrder }
+    ]
 
     return (
-        <View>
+        <>
             <View style={{
                 borderRadius: 5,
                 margin: 10,
@@ -34,9 +51,9 @@ export default function OpenOrders({ navigation }) {
                 </Picker>
             </View>
             <View style={{margin:5}}>
-                <OrdersView data={selectedOrders} navigation={navigation} />
+                <OrdersView data={selectedOrders} onPress={openOrderDetails} />
             </View>
-
-        </View>
+            {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibiility} navigation={navigation} />}            
+        </>
     )
 }

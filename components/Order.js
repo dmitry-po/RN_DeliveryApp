@@ -1,54 +1,45 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, Linking, TouchableOpacity } from 'react-native';
-import { BottomNavigation } from '../shared/tools';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, FlatList, CheckBox, TouchableOpacity } from 'react-native';
+import getOrderLines from '../data/orderDetails';
 
-export default function Order({ navigation }) {
-    const uri = "https://www.google.ru/maps/search/" + navigation.getParam('address')
-    const orderList = [{ lineNum: '1', content: 'Огурцы маринованные', volume: '1', unit: 'банка' },
-    { lineNum: '2', content: 'Картофель молодой', volume: '0.6', unit: 'кг' },
-    { lineNum: '3', content: 'Горошек консервированный', volume: '1', unit: 'банка' },
-    { lineNum: '4', content: 'Морковь свежая', volume: '0.3', unit: 'кг' },
-    { lineNum: '5', content: 'Майонез', volume: '1', unit: 'шт' },
-    { lineNum: '6', content: 'Колбаса', volume: '0.5', unit: 'кг' }]
-
-    const cancelOrder = () => {
-        alert('Заказ будет отменен');
-        navigation.goBack();
+export default function Order({ navigation }) { 
+    const [isModified, setIsModified] = useState(false)
+    const [saveButtonColor, setSaveButtonColor] = useState('#777')
+    const orderLines = getOrderLines(navigation.getParam('key'));
+    function checkAddress() {
+        setIsModified(true)
+        setSaveButtonColor('#025159')
     }
 
-    const goBack = () => navigation.goBack();
 
-    const goToActiveOrders = () => navigation.navigate('Home');
-
-    const leftButtonFunction = navigation.getParam('active') === 0 ? goBack : cancelOrder;
-    const leftButtonText = navigation.getParam('active') === 0 ? 'Вернуться' : 'Отказаться';
-    const leftButtonIcon = navigation.getParam('active') === 0 ? 'arrow-back' : 'cancel';
-    const rightButtonFunction = navigation.getParam('active') === 0 ? goToActiveOrders : goBack;
-    const rightButtonText = navigation.getParam('active') === 0 ? 'Принять' : 'Завершить';
-    const rightButtonIcon = navigation.getParam('active') === 0 ? 'add' : 'done';
-
-    const menu = [{name: leftButtonText, icon:leftButtonIcon, color:'#F25D27', onPress:leftButtonFunction},
-                  {name: rightButtonText, icon: rightButtonIcon, color:'#025159', onPress:rightButtonFunction}]
-
-    console.log(uri)
     return (
-        <>
-            <View style={{ margin: 10, flex: 1 }}>
-                <Text style={styles.header}>Заказ #{navigation.getParam('key')}</Text>
-                <Text style={styles.text}>
-                    Адрес доставки:
-                </Text>
-                <Text style={{ color: 'blue' }} onPress={() => (Linking.openURL(uri))}>{navigation.getParam('address')}</Text>
-                <Text style={styles.text}>Вес отправления:</Text>
-                <Text>{navigation.getParam('weight')}</Text>
-                <Text style={styles.text}>Содержимое: </Text>
-                {orderList.map(item => (
-                    <Text key={item.lineNum}>{item.lineNum}. { item.content}, { item.volume} {item.unit};</Text>
-                ))}
+        <View style={{ margin: 10, flex: 1 }}>
+            <Text style={styles.header}>Заказ {navigation.getParam('key')}</Text>
+            <Text style={styles.text}>{isModified && '*'}Адрес доставки: </Text>
+            <TextInput defaultValue={navigation.getParam('address')} onChangeText={() => checkAddress()} />
+            <Text style={styles.text}>Вес отправления:</Text>
+            <Text>{navigation.getParam('weight')}</Text>
+            <Text style={styles.text}>Содержимое: </Text>
+            <FlatList
+                data={orderLines}
+                keyExtractor={item => item.lineNum}
+                renderItem={({ item }) => (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop:8}}>
+                        <CheckBox style={{marginRight:4}} />
+                        <Text>{item.content}, {item.volume} {item.unit};
+                        </Text></View>
+                )} />
+            <View style={{ alignSelf: 'flex-end', height: 45, flexDirection: 'row', paddingTop: 10, justifyContent: 'center' }}>
+                <TouchableOpacity onPress={() => navigation.goBack()}
+                    style={{ backgroundColor: 'transparent', padding: 8, borderRadius: 5, marginLeft: 8 }}>
+                    <Text style={{ color: '#F25D27', fontWeight: '500' }}>Отменить</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.goBack()} disabled={!isModified}
+                    style={{ backgroundColor: saveButtonColor, padding: 8, borderRadius: 5, marginLeft: 8 }}>
+                    <Text style={{ color: 'white', fontWeight: '500' }}>Сохранить</Text>
+                </TouchableOpacity>
             </View>
-            < BottomNavigation menu={menu} />
-            
-        </>
+        </View>
     );
 }
 

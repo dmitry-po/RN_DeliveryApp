@@ -1,6 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, Text, Dimensions, View, FlatList } from 'react-native';
+import { TouchableOpacity, Text, Dimensions, View, FlatList, StyleSheet, Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+
+import getOrderLines from '../data/orderDetails';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -50,7 +52,7 @@ export function FAB({ navigation, color = 'white', elementColor = 'black', size 
     )
 };
 
-export function OrdersView({ data, navigation }) {
+export function OrdersView({ data, onPress }) {
     /*
     // Filling empty cells
     const fullRows = Math.floor(data.length / numColumns);
@@ -68,7 +70,8 @@ export function OrdersView({ data, navigation }) {
             renderItem={({ item }) => {
                 return (
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Order', item)}
+                        /*onPress={() => navigation.navigate('Order', item)} */
+                        onPress={() => onPress(item)}
                         activeOpacity={0.5}
                         style={{
                             shadowColor: '#000',
@@ -104,3 +107,66 @@ export function OrdersView({ data, navigation }) {
         />
     )
 }
+
+export function OrderDetails({ item, buttons, visible, navigation }) {
+    //const [visibility, setVisibiility] = useState(visible)
+    function editOrder(item) {
+        visible(false)
+        navigation.navigate('Order', item)
+    }
+    const orderLines = getOrderLines(item.key);
+    const uri = "https://www.google.ru/maps/search/" + item.address
+
+    return (
+        <View
+            style={{ position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', elevation: 7 }}>
+            <View style={{ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'black', opacity: 0.6 }}
+                onStartShouldSetResponder={() => visible(false)}></View>
+            <View style={{ position: 'absolute', width: 300, backgroundColor: 'white', opacity: 1, borderRadius: 10, padding: 10 }}>
+                <View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={styles.header}>Заказ {item.key}</Text>
+                        {!item.active && (<TouchableOpacity onPress={() => editOrder(item)}>
+                            <MaterialIcons name='edit' size={24} />
+                        </TouchableOpacity>)
+                        }
+                    </View>
+                    <Text style={styles.text}>Адрес доставки:</Text>
+                    <Text style={{ color: 'blue' }} onPress={() => (Linking.openURL(uri))}>{item.address}</Text>
+                    <Text style={styles.text}>Вес отправления:</Text>
+                    <Text>{item.weight}</Text>
+                    <Text style={styles.text}>Содержимое: </Text>
+                    <FlatList
+                        data={orderLines}
+                        keyExtractor={item => item.lineNum}
+                        renderItem={({ item }) => (<Text key={item.lineNum}>{item.lineNum}. { item.content}, { item.volume} {item.unit};</Text>)} />
+                </View>
+                <View style={{ alignSelf: 'flex-end', flex: 0, flexDirection: 'row', paddingTop: 10 }}>
+                    <TouchableOpacity onPress={() => buttons[0].onPress(item)}
+                        style={{ backgroundColor: 'transparent', padding: 8, borderRadius: 5, marginLeft: 8 }}>
+                        <Text style={{ color: '#F25D27', fontWeight: '500' }}>{buttons[0].title}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => buttons[1].onPress(item)}
+                        style={{ backgroundColor: '#025159', padding: 8, borderRadius: 5, marginLeft: 8 }}>
+                        <Text style={{ color: 'white', fontWeight: '500' }}>{buttons[1].title}</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+    )
+}
+
+const styles = StyleSheet.create({
+    header: {
+        fontSize: 24,
+        fontWeight: 'bold'
+    },
+    textInput: {
+        paddingTop: 5,
+        borderBottomColor: '#025159',
+        borderBottomWidth: 1
+    },
+    text: {
+        paddingTop: 10
+    }
+})
