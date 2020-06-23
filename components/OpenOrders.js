@@ -1,25 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, Picker, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Picker } from 'react-native';
 import { OrdersView, OrderDetails } from '../shared/tools';
-import styles from '../assets/Styles';
-import allOrders from '../data/orders';
+import { getAllOrders, setOrderStatus } from '../data/orders';
 import allShifts from '../data/shifts';
 
 
 export default function OpenOrders({ navigation }) {
+    var allOrders = getAllOrders()
     const [selectedShift, setSelectedShift] = useState(allShifts[0])
-    const selectedOrders = allOrders.filter(item => item.shift === selectedShift)
+    const ordersByShift = allOrders.filter(item => item.shift == selectedShift && item.active == false)
     const [popupVisibiility, setpopupVisibiility] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState({})
+
+    console.log(navigation)
+
     function openOrderDetails(item) {
         setSelectedOrder(item);
         setpopupVisibiility(true);
     }
-    function cancelOrder() {       
+    function cancelOrder() {
     }
-    function closeOrder() {
-        navigation.navigate('Home');
-        setpopupVisibiility(false);
+    function closeOrder(order) {
+        setOrderStatus(order, true)
+        navigation.navigate('Home', {});
     }
 
     const buttons = [
@@ -50,10 +53,11 @@ export default function OpenOrders({ navigation }) {
                     ))}
                 </Picker>
             </View>
-            <View style={{margin:5}}>
-                <OrdersView data={selectedOrders} onPress={openOrderDetails} />
+            <View style={{ margin: 5 }}>
+                {(ordersByShift.length > 0) && <OrdersView data={ordersByShift} onPress={openOrderDetails} />}
+                {(ordersByShift.length == 0) && (< Text style={{ alignSelf: 'center' }}> Нет доступных заказов.</Text>)}
             </View>
-            {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibiility} navigation={navigation} />}            
+            {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibiility} navigation={navigation} />}
         </>
     )
 }

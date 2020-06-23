@@ -1,42 +1,108 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, FlatList, CheckBox, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import getOrderLines from '../data/orderDetails';
+import { setOrderAddress } from '../data/orders';
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Order({ navigation }) { 
-    const [isModified, setIsModified] = useState(false)
-    const [saveButtonColor, setSaveButtonColor] = useState('#777')
-    const orderLines = getOrderLines(navigation.getParam('key'));
-    function checkAddress() {
-        setIsModified(true)
-        setSaveButtonColor('#025159')
+export default function Order({ navigation }) {
+    const order = navigation.getParam('item');
+    const [isModified, setIsModified] = useState(false);
+    const [saveButtonColor, setSaveButtonColor] = useState('#777');
+    const [address, setAddress] = useState(order.address);
+    const [orderLines, setOrderLines] = useState(getOrderLines(order.key));
+    const [deletedLines, setDeletedLines] = useState([])
+
+    function checkAddress(text) {
+        setIsModified(true);
+        setSaveButtonColor('#025159');
+        setAddress(text);
     }
+
+    const deleteLine = (line) => {
+        setIsModified(true);
+        setDeletedLines((prevList) => ([...prevList, line]))
+        setOrderLines((prevList) => (prevList.filter((item) => item != line)))
+    }
+
+    function restoreLine(line) {
+        setDeletedLines((prevList) => (prevList.filter((item) => item != line)))
+        setOrderLines((prevList) => ([...prevList, line]))
+    }
+
+    const updateOrder = () => {
+        setOrderAddress(order, address);
+        navigation.navigate('OpenOrders', {})
+    }
+    const cancelUpdates = () => { navigation.goBack() }
 
 
     return (
-        <View style={{ margin: 10, flex: 1 }}>
-            <Text style={styles.header}>Заказ {navigation.getParam('key')}</Text>
-            <Text style={styles.text}>{isModified && '*'}Адрес доставки: </Text>
-            <TextInput defaultValue={navigation.getParam('address')} onChangeText={() => checkAddress()} />
-            <Text style={styles.text}>Вес отправления:</Text>
-            <Text>{navigation.getParam('weight')}</Text>
-            <Text style={styles.text}>Содержимое: </Text>
-            <FlatList
-                data={orderLines}
-                keyExtractor={item => item.lineNum}
-                renderItem={({ item }) => (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop:8}}>
-                        <CheckBox style={{marginRight:4}} />
-                        <Text>{item.content}, {item.volume} {item.unit};
-                        </Text></View>
-                )} />
+        <View style={{ margin: 10, flex: 1, backgroundColor: 'white', padding: 5, borderRadius: 5 }}>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.header}>Заказ {order.key}</Text>
+                <View style={{ margin: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        < MaterialIcons name='home' size={22} />
+                        <Text style={styles.text}>{isModified && '*'}Адрес доставки: </Text>
+                    </View>
+                    <TextInput defaultValue={address} onChangeText={checkAddress} style={styles.textInput} />
+                </View>
+
+                <View style={{ margin: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        < MaterialIcons name='work' size={22} />
+                        <Text style={styles.text}>Вес отправления:</Text>
+                    </View>
+                    <Text style={styles.textInput}>{order.weight}</Text>
+                </View>
+
+                <View style={{ margin: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        < MaterialIcons name='shopping-cart' size={22} />
+                        <Text style={styles.text}>Содержимое:</Text>
+                    </View>
+                    <FlatList
+                        data={orderLines}
+                        keyExtractor={item => item.lineNum}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }} onPress={() => deleteLine(item)} >
+                                < MaterialIcons
+                                    name='clear'
+                                    color='#F25D27'
+                                    size={24}
+                                />
+                                <Text style={{ marginLeft: 5 }}>{item.content}, {item.volume} {item.unit};</Text>
+                            </TouchableOpacity>
+                        )} />
+                    {(deletedLines.length > 0) && (<View>
+                        <Text>------------------------------</Text>
+                        <FlatList
+                            data={deletedLines}
+                            keyExtractor={item => item.lineNum}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }} onPress={() => restoreLine(item)} >
+                                    < MaterialIcons
+                                        name='add'
+                                        color='#025159'
+                                        size={24}
+                                    />
+                                    <Text style={{ marginLeft: 5, textDecorationLine: 'line-through', color:'#979797' }}>{item.content}, {item.volume} {item.unit};</Text>
+                                </TouchableOpacity>
+                            )} />
+                    </View>)}
+                </View>
+            </View>
+
+
+
             <View style={{ alignSelf: 'flex-end', height: 45, flexDirection: 'row', paddingTop: 10, justifyContent: 'center' }}>
-                <TouchableOpacity onPress={() => navigation.goBack()}
+                <TouchableOpacity onPress={cancelUpdates}
                     style={{ backgroundColor: 'transparent', padding: 8, borderRadius: 5, marginLeft: 8 }}>
-                    <Text style={{ color: '#F25D27', fontWeight: '500' }}>Отменить</Text>
+                    <Text style={{ color: '#F25D27', fontWeight: '500' }}>ОТМЕНИТЬ</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => navigation.goBack()} disabled={!isModified}
+                <TouchableOpacity onPress={updateOrder} disabled={!isModified}
                     style={{ backgroundColor: saveButtonColor, padding: 8, borderRadius: 5, marginLeft: 8 }}>
-                    <Text style={{ color: 'white', fontWeight: '500' }}>Сохранить</Text>
+                    <Text style={{ color: 'white', fontWeight: '500' }}>СОХРАНИТЬ</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -44,30 +110,19 @@ export default function Order({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    mainview: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    windowview: {
-        backgroundColor: 'white',
-        borderRadius: 5,
-        opacity: 0.95,
-        margin: 10,
-        padding: 10
-    },
+
     header: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 10,
+        margin: 10,
     },
     textInput: {
-        paddingTop: 5,
-        borderBottomColor: '#025159',
-        borderBottomWidth: 1
+        paddingVertical: 8,
+        borderBottomWidth: 1,
     },
     text: {
-        paddingTop: 10,
-        fontSize: 16,
-        fontWeight: 'bold'
+        fontSize: 18,
+        fontWeight: 'bold',
+        paddingHorizontal: 8
     }
 })

@@ -1,40 +1,32 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Button, Text, Linking, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, FlatList, Text } from 'react-native';
 import { OrdersView, FAB, AppWidth, OrderDetails } from '../shared/tools';
+import { getActiveOrders, setOrderStatus } from '../data/orders';
 
 export default function Home({ navigation }) {
-    const [orders, setOrders] = useState([
-        { key: '1', address: 'Пугачева, 147', weight: '11.1кг', active: false },
-        { key: '2', address: 'Посадского, 215', weight: '22.2кг', active: true },
-        { key: '3', address: 'Летниковская, 10 стр. 5', weight: '33.3кг', active: true },
-        { key: '4', address: 'Пресненская наб. 12', weight: '44.4кг', active: true },
-        { key: '5', address: 'Ленина, 17', weight: '55.5кг', active: true },
-        { key: '6', address: 'Жерара Депардье, 81', weight: '66.6кг', active: true },
-        { key: '7', address: 'Адамса, 42', weight: '77.7кг', active: true },
-        { key: '8', address: 'Вечнозеленая Аллея, 742', weight: '88.8кг', active: true },
-        { key: '12', address: 'Посадского, 215', weight: '22.2кг', active: true },
-        { key: '13', address: 'Летниковская, 10 стр. 5', weight: '33.3кг', active: true },
-        { key: '14', address: 'Пресненская наб. 12', weight: '44.4кг', active: true },
-        { key: '15', address: 'Ленина, 17', weight: '55.5кг', active: true },
-        { key: '16', address: 'Жерара Депардье, 81', weight: '66.6кг', active: true },
-        { key: '17', address: 'Адамса, 42', weight: '77.7кг', active: true },
-        { key: '18', address: 'Вечнозеленая Аллея, 742', weight: '88.8кг', active: true }])
-
-    const [popupVisibiility, setpopupVisibiility] = useState(false)
+    //const [selectedOrders, setSelectedOrders] = useState(getActiveOrders())
+    var selectedOrders = getActiveOrders()
     const [selectedOrder, setSelectedOrder] = useState({})
+    const [popupVisibiility, setpopupVisibility] = useState(false)
+
+    console.log(navigation)
+
     function openOrderDetails(item) {
         setSelectedOrder(item);
-        setpopupVisibiility(true);
+        setpopupVisibility(true);
     }
-    function cancelOrder(item) {
-        setpopupVisibiility(false);
-        alert('Заказ ' + item.key + ' будет отменен');
-
+    function cancelOrder(order) {
+        console.log(order)
+        setpopupVisibility(false);
+        alert('Заказ ' + order.key + ' будет отменен')
+        setOrderStatus(order, false)
+        selectedOrders = getActiveOrders()
     }
     function closeOrder(item) {
         console.log('Заказ выполнен');
-        setpopupVisibiility(false);
+        setpopupVisibility(false);
     }
+
 
     const buttons = [
         { title: 'ОТКЛОНИТЬ', onPress: cancelOrder },
@@ -51,14 +43,16 @@ export default function Home({ navigation }) {
 
     return (
         <>
-            <View style={styles.mainview}>
+            {console.log('enter')}
+            <View style={styles.mainview} on>
                 <View style={{ margin: 5, flex: 1 }}>
-                    < OrdersView data={orders} onPress={openOrderDetails} />
+                    {(selectedOrders.length > 0) && < OrdersView data={selectedOrders} onPress={openOrderDetails} />}
+                    {(selectedOrders.length == 0) && (< Text style={{ alignSelf: 'center' }}> Нет активных заказов.</Text>)}
                 </View>
                 { /* <Button title='Построить маршрут' onPress={() => (Linking.openURL(getRoute()))} /> */}
                 <FAB navigation={navigation} elementColor='#F25D27' />
             </View>
-            {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibiility} navigation={navigation} />}
+            {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibility} navigation={navigation} />}
         </>
     );
 }
