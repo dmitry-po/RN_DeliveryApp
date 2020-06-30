@@ -6,31 +6,51 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Order({ navigation }) {
     const order = navigation.getParam('item');
-    const [isModified, setIsModified] = useState(false);
+
+    const [isAddressModified, setIsAddressModified] = useState(false);
+    const [isLinesModified, setIsLinesModified] = useState(false);
+    const [isModified, setIsModified] = useState(false)
     const [saveButtonColor, setSaveButtonColor] = useState('#777');
-    const [address, setAddress] = useState(order.address);
+
+    var newAddress = order.address
     const [orderLines, setOrderLines] = useState(getOrderLines(order.key));
     const [deletedLines, setDeletedLines] = useState([])
 
+    function setModified() {
+        if (isAddressModified || isLinesModified) {
+            setIsModified(true);
+            setSaveButtonColor('#025159');
+        }
+        else {
+            setIsModified(false);
+            setSaveButtonColor('#777');
+        }
+    }
+
     function checkAddress(text) {
-        setIsModified(true);
-        setSaveButtonColor('#025159');
-        setAddress(text);
+        setIsAddressModified(true);
+        setModified();
+        newAddress = text
     }
 
     const deleteLine = (line) => {
-        setIsModified(true);
-        setDeletedLines((prevList) => ([...prevList, line]))
-        setOrderLines((prevList) => (prevList.filter((item) => item != line)))
+        setIsLinesModified(true);
+        setModified();
+        setDeletedLines(prevList => [...prevList, line])
+        setOrderLines(prevList => prevList.filter((item) => item != line))
     }
 
     function restoreLine(line) {
-        setDeletedLines((prevList) => (prevList.filter((item) => item != line)))
-        setOrderLines((prevList) => ([...prevList, line]))
+        if (deletedLines.length === 1) {
+            setIsLinesModified(false)
+        }
+        setModified();
+        setDeletedLines(prevList => prevList.filter((item) => item != line))
+        setOrderLines(prevList => [...prevList, line])
     }
 
     const updateOrder = () => {
-        setOrderAddress(order, address);
+        setOrderAddress(order, newAddress);
         navigation.navigate('OpenOrders', {})
     }
     const cancelUpdates = () => { navigation.goBack() }
@@ -43,9 +63,9 @@ export default function Order({ navigation }) {
                 <View style={{ margin: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         < MaterialIcons name='home' size={22} />
-                        <Text style={styles.text}>{isModified && '*'}Адрес доставки: </Text>
+                        <Text style={styles.text}>{isAddressModified && '*'}Адрес доставки: </Text>
                     </View>
-                    <TextInput defaultValue={address} onChangeText={checkAddress} style={styles.textInput} />
+                    <TextInput defaultValue={newAddress} onChangeText={checkAddress} style={styles.textInput} />
                 </View>
 
                 <View style={{ margin: 8 }}>
@@ -59,7 +79,7 @@ export default function Order({ navigation }) {
                 <View style={{ margin: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         < MaterialIcons name='shopping-cart' size={22} />
-                        <Text style={styles.text}>Содержимое:</Text>
+                        <Text style={styles.text}>{isLinesModified && '*'}Содержимое:</Text>
                     </View>
                     <FlatList
                         data={orderLines}
@@ -86,7 +106,7 @@ export default function Order({ navigation }) {
                                         color='#025159'
                                         size={24}
                                     />
-                                    <Text style={{ marginLeft: 5, textDecorationLine: 'line-through', color:'#979797' }}>{item.content}, {item.volume} {item.unit};</Text>
+                                    <Text style={{ marginLeft: 5, textDecorationLine: 'line-through', color: '#979797' }}>{item.content}, {item.volume} {item.unit};</Text>
                                 </TouchableOpacity>
                             )} />
                     </View>)}
