@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TouchableOpacity, Text, Dimensions, View, FlatList, StyleSheet, Linking, CheckBox } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import getOrderLines from '../data/orderDetails';
+import getOrderLines, { getActiveLines } from '../data/orderDetails';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -47,7 +47,7 @@ export function FAB({ navigation, color = 'white', elementColor = 'black', size 
             elevation: 3
         }}
             onPress={() => navigation.navigate('OpenOrders')}>
-            <MaterialIcons name='add' size={40} color={elementColor}/>
+            <MaterialIcons name='add' size={40} color={elementColor} />
         </TouchableOpacity>
     )
 };
@@ -120,7 +120,7 @@ export function OrderDetails({ item, buttons, visible, navigation }) {
     const secondButtonPressHandler = () => {
         buttons[1].onPress(item);
     }
-    const orderLines = getOrderLines(item.key);
+    const orderLines = getActiveLines(item.key);
     const uri = "https://www.google.ru/maps/search/" + item.address
 
     return (
@@ -145,11 +145,11 @@ export function OrderDetails({ item, buttons, visible, navigation }) {
                     <FlatList
                         data={orderLines}
                         keyExtractor={item => item.lineNum}
-                        renderItem={({ item }) => (<Text key={item.lineNum}>{item.lineNum}. { item.content}, { item.volume} {item.unit};</Text>)} />
+                        renderItem={({ item }) => (<Text> - { item.content}, { item.volume} {item.unit};</Text>)} />
                 </View>
                 <View style={{ alignSelf: 'flex-end', flex: 0, flexDirection: 'row', paddingTop: 10 }}>
                     <TouchableOpacity onPress={firstButtonPressHandler}
-                        style={{ backgroundColor: 'transparent', padding: 8, borderRadius: 5, marginLeft: 8 }}>
+                        style={{ backgroundColor: 'white', padding: 8, borderRadius: 5, marginLeft: 8 }}>
                         <Text style={{ color: '#F25D27', fontWeight: '500' }}>{buttons[0].title}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={secondButtonPressHandler}
@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1
     },
     text: {
-        paddingTop: 10
+        paddingTop: 10,
+        fontWeight: 'bold'
     }
 })

@@ -12,8 +12,6 @@ export default function OpenOrders({ navigation }) {
     const [popupVisibiility, setpopupVisibiility] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState({})
 
-    console.log(navigation)
-
     function openOrderDetails(item) {
         setSelectedOrder(item);
         setpopupVisibiility(true);
