@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, Image, Button, Linking } from 'react-native';
 import { OrdersView, FAB, AppWidth, OrderDetails } from '../shared/tools';
 import { getActiveOrders, setOrderStatus } from '../data/orders';
 
@@ -9,24 +9,23 @@ export default function Home({ navigation }) {
     const [selectedOrder, setSelectedOrder] = useState({})
     const [popupVisibiility, setpopupVisibility] = useState(false)
 
-    console.log(navigation)
+    // for refresing screen from child -->
+    const [rerender, setRerender] = useState(0)
+    // <--
 
     function openOrderDetails(item) {
         setSelectedOrder(item);
         setpopupVisibility(true);
     }
     function cancelOrder(order) {
-        console.log(order)
         setpopupVisibility(false);
         alert('Заказ ' + order.key + ' будет отменен')
-        setOrderStatus(order, false)
+        setOrderStatus(order.key, false)
         selectedOrders = getActiveOrders()
     }
     function closeOrder(item) {
-        console.log('Заказ выполнен');
         setpopupVisibility(false);
     }
-
 
     const buttons = [
         { title: 'ОТКЛОНИТЬ', onPress: cancelOrder },
@@ -34,25 +33,39 @@ export default function Home({ navigation }) {
     ]
 
     function getRoute() {
+        var addresses = []
+        selectedOrders.forEach((item) => addresses.push(item.address))
         const uri = 'https://www.google.ru/maps/dir/'
-        const addr1 = 'Псков, ул. Ленина, 17'
-        const addr2 = 'Псков, ул. Текстильная, 11'
-        const addr3 = 'Псков, ул. Набат, 2'
-        return (uri + '/' + addr1 + '/' + addr2 + '/' + addr3 + '/')
+        return (uri + '/' + addresses.join('/') + '/')
+    }
+
+    const fabOnPress = () => {
+        navigation.navigate('OpenOrders')
     }
 
     return (
         <>
-            {console.log('enter')}
             <View style={styles.mainview} on>
                 <View style={{ margin: 5, flex: 1 }}>
-                    {(selectedOrders.length > 0) && < OrdersView data={selectedOrders} onPress={openOrderDetails} />}
-                    {(selectedOrders.length == 0) && (< Text style={{ alignSelf: 'center' }}> Нет активных заказов.</Text>)}
+                    {selectedOrders.length > 0 &&
+                        < OrdersView
+                            data={selectedOrders}
+                            onPress={openOrderDetails}
+                            renderer={setRerender}
+                            enableMultiselect={false} />}
+                    {selectedOrders.length === 0 &&
+                        < Text style={{ alignSelf: 'center' }}> Нет активных заказов.</Text>}
                 </View>
-                { /* <Button title='Построить маршрут' onPress={() => (Linking.openURL(getRoute()))} /> */}
-                <FAB navigation={navigation} elementColor='#F25D27' />
+                <Image source={require('../img/Logo.png')} style={{
+                    width: 73, height: 53.125, resizeMode: 'stretch',
+                    position: 'absolute', bottom: 8, left: 8
+                }} />
+                <FAB onPress={fabOnPress} elementColor='#F25D27' />
             </View>
+            {selectedOrders.length > 0 && <Button title='Построить маршрут' onPress={() => (Linking.openURL(getRoute()))} />}
+
             {popupVisibiility && <OrderDetails item={selectedOrder} buttons={buttons} visible={setpopupVisibility} navigation={navigation} />}
+
         </>
     );
 }

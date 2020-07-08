@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, Text, Dimensions, View, FlatList, StyleSheet, Linking, CheckBox } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { TouchableOpacity, Text, Dimensions, View, FlatList, StyleSheet, Linking, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import getOrderLines, { getActiveLines } from '../data/orderDetails';
@@ -31,7 +31,7 @@ export function BottomNavigation({ menu, navigation }) {
 }
 
 
-export function FAB({ navigation, color = 'white', elementColor = 'black', size = 56 }) {
+export function FAB({ onPress, color = 'white', elementColor = 'black', size = 56 }) {
     return (
         <TouchableOpacity style={{
             position: 'absolute',
@@ -46,13 +46,13 @@ export function FAB({ navigation, color = 'white', elementColor = 'black', size 
             height: size,
             elevation: 3
         }}
-            onPress={() => navigation.navigate('OpenOrders')}>
+            onPress={onPress}>
             <MaterialIcons name='add' size={40} color={elementColor} />
         </TouchableOpacity>
     )
 };
 
-export function OrdersView({ data, onPress }) {
+export function OrdersView({ data, onPress, renderer, enableMultiselect }) {
     /*
     // Filling empty cells
     const fullRows = Math.floor(data.length / numColumns);
@@ -63,6 +63,22 @@ export function OrdersView({ data, onPress }) {
         }
     }
     */
+    const [showCheckboxes, setShowCheckboxes] = useState(false)
+
+    const updateParrent = () => renderer((curval) => curval += 1);
+
+    const enableCheckboxes = (item) => {
+        if (enableMultiselect) {
+            data.forEach((line) => line.selected = false);
+            setShowCheckboxes(!showCheckboxes);
+            selectOrder(item);
+        }
+    }
+    const selectOrder = (item) => {
+        item.selected = !item.selected;
+        if (data.filter((line) => line.selected).length === 0) setShowCheckboxes(false);
+        updateParrent();
+    }
 
     return (
         <FlatList
@@ -72,6 +88,7 @@ export function OrdersView({ data, onPress }) {
                 return (
                     <TouchableOpacity
                         onPress={() => onPress(item)}
+                        onLongPress={() => { enableCheckboxes(item) }}
                         activeOpacity={0.5}
                         style={{
                             shadowColor: '#000',
@@ -84,7 +101,9 @@ export function OrdersView({ data, onPress }) {
                             backgroundColor: 'white',
                             borderRadius: 5,
                             margin: 5,
-                            padding: 5
+                            padding: 5,
+                            borderColor: item.selected ? '#F25D27' : 'white',
+                            borderWidth: 1
                         }}>
                         <Text style={{
                             fontSize: 18,
@@ -101,7 +120,16 @@ export function OrdersView({ data, onPress }) {
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ paddingLeft: 5, paddingRight: 5 }}>{item.weight}</Text>
                         </View>
+                        {showCheckboxes && (
+                            <TouchableOpacity style={{ position: 'absolute', right: 0, top: 0, borderWidth:8, borderRadius:20, borderColor:'transparent' }} onPress={() => selectOrder(item)}>
+                                < MaterialIcons
+                                    name={item.selected ? "check-circle" : "radio-button-unchecked"}
+                                    size={18}
+                                    color={item.selected ? "#F25D27" : "black"} />
+                            </TouchableOpacity>)}
+
                     </TouchableOpacity>
+
                 )
             }}
         />
@@ -112,7 +140,7 @@ export function OrderDetails({ item, buttons, visible, navigation }) {
     //const [visibility, setVisibiility] = useState(visible)
     const editOrder = () => {
         visible(false);
-        navigation.navigate('Order', { item: item });
+        navigation.navigate('OrderDetails', { item: item });
     }
     const firstButtonPressHandler = () => {
         buttons[0].onPress(item);

@@ -3,7 +3,7 @@ import { createStackNavigator } from 'react-navigation-stack';
 
 import Login from '../components/Login';
 import Home from '../components/Home';
-import Order from '../components/Order';
+import OrderDetails from '../components/OrderDetails';
 import OpenOrders from '../components/OpenOrders';
 import Header from '../shared/header';
 
@@ -25,8 +25,15 @@ const screens = {
             }
         }
     },
-    Order: {
-        screen: Order,
+    OpenOrders: {
+        screen: OpenOrders,
+        navigationOptions: {
+            title: "Доступные заказы",
+
+        }
+    },
+    OrderDetails: {
+        screen: OrderDetails,
         navigationOptions: {
             title: "Информация о заказе",
             gestureEnabled: true,
@@ -36,13 +43,7 @@ const screens = {
 
         }
     },
-    OpenOrders: {
-        screen: OpenOrders,
-        navigationOptions: {
-            title: "Доступные заказы",
-
-        }
-    }
+    
 };
 
 const AppStack = createStackNavigator(screens, {

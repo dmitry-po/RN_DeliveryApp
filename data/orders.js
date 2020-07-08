@@ -28,13 +28,12 @@ export function updateOrders(orders) {
     allOrders = orders
 }
 
-export function setOrderAddress(order, address) {
-    var idx = allOrders.indexOf(order);
-    allOrders[idx].address = address;
-    console.log(allOrders[idx])
+export function setOrderAddress(orderKey, address) {
+    var order = allOrders.filter((item) => item.key === orderKey)[0];
+    order.address = address;
 }
 
-export function setOrderStatus(order, status) {
-    var idx = allOrders.indexOf(order);
-    allOrders[idx].active = status;
+export function setOrderStatus(orderKey, status) {
+    var order = allOrders.filter((item) => item.key === orderKey)[0];
+    order.active = status;
 }
